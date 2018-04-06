@@ -126,7 +126,7 @@ bool Exporter::ExportWholePixiProject(gd::Project & project, gd::String exportDi
             gd::LogError(_("Error during exporting! Unable to export events:\n")+lastError);
             return false;
         }
-        helper.AddLibsInclude(true, false, includesFiles);
+        helper.AddLibsInclude(true, false, false, includesFiles);
 
         //Export source files
         if ( !helper.ExportExternalSourceFiles(exportedProject, codeOutputDir, includesFiles) )
@@ -228,7 +228,7 @@ bool Exporter::ExportWholeCocos2dProject(gd::Project & project, bool debugMode, 
         gd::LogError(_("Error during exporting! Unable to export events:\n")+lastError);
         return false;
     }
-    helper.AddLibsInclude(false, true, includesFiles);
+    helper.AddLibsInclude(false, true, false, includesFiles);
 
     //Export source files
     if ( !helper.ExportExternalSourceFiles(exportedProject, codeOutputDir, includesFiles) )

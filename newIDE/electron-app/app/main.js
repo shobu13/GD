@@ -17,6 +17,10 @@ const {
   stopServer,
   getLocalNetworkIps,
 } = require('./ServeFolder');
+const {
+  startDebuggerServer,
+  sendMessage,
+} = require('./DebuggerServer');
 const { buildMainMenuFor } = require('./MainMenu');
 const throttle = require('lodash.throttle');
 
@@ -104,6 +108,7 @@ app.on('ready', function() {
     stopServer(() => {});
   });
 
+  // S3Upload events:
   ipcMain.on('s3-folder-upload', (event, localDir) => {
     log.info('Received event s3-upload with localDir=', localDir);
 
@@ -132,29 +137,45 @@ app.on('ready', function() {
     );
   });
 
+  // ServeFolder events:
   ipcMain.on('serve-folder', (event, options) => {
     log.info('Received event to server folder with options=', options);
 
-    serveFolder(
-      options,
-      (err, serverParams) => {
-        event.sender.send('serve-folder-done', err, serverParams);
-      }
-    );
+    serveFolder(options, (err, serverParams) => {
+      event.sender.send('serve-folder-done', err, serverParams);
+    });
   });
 
-  ipcMain.on('stop-server', (event) => {
+  ipcMain.on('stop-server', event => {
     log.info('Received event to stop server');
 
-    stopServer(
-      (err) => {
-        event.sender.send('stop-server-done', err);
-      }
-    );
+    stopServer(err => {
+      event.sender.send('stop-server-done', err);
+    });
   });
 
-  ipcMain.on('get-local-network-ips', (event) => {
+  ipcMain.on('get-local-network-ips', event => {
     event.sender.send('local-network-ips', getLocalNetworkIps());
+  });
+
+  // DebuggerServer events:
+  ipcMain.on('debugger-start-server', (event, options) => {
+    log.info('Received event to start debugger server with options=', options);
+
+    startDebuggerServer({
+      onMessage: message =>
+        event.sender.send('debugger-message-received', message),
+      onError: error => event.sender.send('debugger-error-received', error),
+      onConnectionClose: () => event.sender.send('debugger-connection-closed'),
+      onConnectionOpen: () => event.sender.send('debugger-connection-opened'),
+      onListening: () => event.sender.send('debugger-start-server-done'),
+    });
+  });
+
+  ipcMain.on('debugger-send-message', (event, message) => {
+    sendMessage(message, err =>
+      event.sender.send('debugger-send-message-done', err)
+    );
   });
 
   // This will immediately download an update, then install when the

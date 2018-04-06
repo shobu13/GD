@@ -44,6 +44,7 @@ import { timeFunction } from '../Utils/TimeFunction';
 import newNameGenerator from '../Utils/NewNameGenerator';
 
 // Editors:
+import DebuggerEditor from './Editors/DebuggerEditor';
 import EventsEditor from './Editors/EventsEditor';
 import ExternalEventsEditor from './Editors/ExternalEventsEditor';
 import SceneEditor from './Editors/SceneEditor';
@@ -97,6 +98,7 @@ type State = {|
   updateStatus: UpdateStatus,
   aboutDialogOpen: boolean,
   platformSpecificAssetsDialogOpen: boolean,
+  debuggerDialogOpen: boolean,
 |};
 
 type Props = {
@@ -138,6 +140,7 @@ export default class MainFrame extends React.Component<Props, State> {
     updateStatus: { message: '', status: 'unknown' },
     aboutDialogOpen: false,
     platformSpecificAssetsDialogOpen: false,
+    debuggerDialogOpen: false,
   };
   toolbar = null;
   confirmCloseDialog: any = null;
@@ -499,6 +502,7 @@ export default class MainFrame extends React.Component<Props, State> {
           showNetworkPreviewButton={
             this._previewLauncher && this._previewLauncher.canDoNetworkPreview()
           }
+          onOpenDebugger={this.openDebugger}
           onEditObject={this.props.onEditObject}
           showObjectsList={!this.props.integratedEditor}
           resourceSources={this.props.resourceSources}
@@ -521,6 +525,7 @@ export default class MainFrame extends React.Component<Props, State> {
           showNetworkPreviewButton={
             this._previewLauncher && this._previewLauncher.canDoNetworkPreview()
           }
+          onOpenDebugger={this.openDebugger}
           onOpenExternalEvents={this.openExternalEvents}
           onOpenLayout={name =>
             this.openLayout(name, {
@@ -660,6 +665,25 @@ export default class MainFrame extends React.Component<Props, State> {
           ),
           key: 'start page',
           closable: false,
+        }),
+      },
+      () => this.updateToolbar()
+    );
+  };
+
+  openDebugger = () => {
+    this.setState(
+      {
+        editorTabs: openEditorTab(this.state.editorTabs, {
+          name: 'Debugger',
+          renderEditor: ({ isActive, editorRef }) => (
+            <DebuggerEditor
+              project={this.state.currentProject}
+              isActive={isActive}
+              ref={editorRef}
+            />
+          ),
+          key: 'debugger',
         }),
       },
       () => this.updateToolbar()
@@ -867,6 +891,7 @@ export default class MainFrame extends React.Component<Props, State> {
       subscriptionDialogOpen,
       updateStatus,
       aboutDialogOpen,
+      debuggerDialogOpen,
     } = this.state;
     const {
       exportDialog,

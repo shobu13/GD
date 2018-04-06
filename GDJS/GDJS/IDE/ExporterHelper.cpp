@@ -89,7 +89,7 @@ bool ExporterHelper::ExportLayoutForPixiPreview(gd::Project & project, gd::Layou
     if ( !ExportEventsCode(exportedProject, codeOutputDir, includesFiles) )
         return false;
 
-    AddLibsInclude(true, false, includesFiles);
+    AddLibsInclude(true, false, true, includesFiles);
 
     //Export source files
     if ( !ExportExternalSourceFiles(exportedProject, codeOutputDir, includesFiles) )
@@ -312,8 +312,13 @@ bool ExporterHelper::CompleteIndexFile(gd::String & str, gd::String customCss, g
     return true;
 }
 
-void ExporterHelper::AddLibsInclude(bool pixiRenderers, bool cocosRenderers, std::vector<gd::String> & includesFiles)
+void ExporterHelper::AddLibsInclude(bool pixiRenderers, bool cocosRenderers, bool websocketDebuggerClient, std::vector<gd::String> & includesFiles)
 {
+    if (websocketDebuggerClient)
+    {
+        InsertUnique(includesFiles, "websocket-debugger-client/websocket-debugger-client.js");
+    }
+
     if (pixiRenderers)
     {
         InsertUnique(includesFiles, "pixi-renderers/pixi.js");
